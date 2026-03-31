@@ -1,64 +1,116 @@
-# Fish Detection Backend
+# Backend - Disaster Safety System
 
-방어, 부시리, 잿방어 분류 AI 서비스 백엔드 API
+재난 안전 시스템 백엔드 API 서버
 
 ## 🚀 Tech Stack
 
-- Python 3.10+
-- FastAPI / Flask
-- Ultralytics YOLO
-- PostgreSQL / MySQL
-- Docker
+- **Java 17** (LTS)
+- **Spring Boot 2.7.18** (Lombok 호환)
+- **Gradle 7.6.4**
+- **MySQL 8.0**
+- **JPA/Hibernate**
 
-## 📁 Project Structure
+## 📦 Development
 
-```
-backend/
-├── app/
-│   ├── api/            # API 엔드포인트
-│   │   ├── routes/
-│   │   └── deps.py
-│   ├── core/           # 설정, 보안
-│   │   ├── config.py
-│   │   └── security.py
-│   ├── models/         # DB 모델
-│   ├── schemas/        # Pydantic 스키마
-│   ├── services/       # 비즈니스 로직
-│   │   └── prediction.py
-│   └── main.py
-├── tests/
-├── requirements.txt
-├── Dockerfile
-└── README.md
-```
+### Prerequisites
 
-## 🛠️ Setup
+- JDK 17
+- MySQL 8.0
+
+### Build
 
 ```bash
-# 가상환경 생성
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# 의존성 설치
-pip install -r requirements.txt
-
-# 서버 실행
-uvicorn app.main:app --reload
+./gradlew build
 ```
 
-## 🔗 API Endpoints
+### Run
 
-- `POST /api/v1/predict` - 이미지 업로드 및 예측
-- `GET /api/v1/history` - 예측 히스토리
-- `GET /api/v1/stats` - 통계
+```bash
+./gradlew bootRun
+```
+
+→ http://localhost:8080
+
+### API Docs
+
+→ http://localhost:8080/swagger-ui.html
 
 ## 🐳 Docker
 
 ```bash
-docker build -t fish-detection-backend .
-docker run -p 8000:8000 fish-detection-backend
+docker build -t safety-backend .
+docker run -p 8080:8080 safety-backend
 ```
 
-## 👥 Team
+## 📁 Project Structure
 
-Backend Team
+```
+src/main/java/com/disaster/safety/
+├── SafetyApplication.java
+├── controller/
+│   ├── HealthController.java
+│   └── DetectionController.java
+├── service/
+│   └── DetectionService.java
+├── dto/
+│   ├── DetectionRequest.java
+│   └── DetectionResponse.java
+├── config/
+│   └── WebConfig.java
+└── repository/
+    └── (Add your repositories here)
+```
+
+## 🔗 AI Model Integration
+
+AI Model Server: `http://ai-model:5000`
+
+```java
+// DetectionService에서 AI 모델 호출
+POST http://ai-model:5000/predict
+- image: MultipartFile
+- cctvType: String
+```
+
+## 📊 API Endpoints
+
+### Health Check
+
+```bash
+GET /api/health
+```
+
+### Detection
+
+```bash
+POST /api/detection/analyze
+- image: file
+- cctvType: electrical_room | construction_site | general
+```
+
+### History
+
+```bash
+GET /api/detection/history
+```
+
+## 🗄️ Database
+
+```yaml
+# application.yml
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/safety_db
+    username: root
+    password: password
+```
+
+## 🧪 Testing
+
+```bash
+./gradlew test
+```
+
+## 📝 License
+
+MIT
