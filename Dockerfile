@@ -1,5 +1,5 @@
-# Java 17 기반 이미지
-FROM openjdk:17-jdk-slim
+# Java 17 기반 이미지 (Eclipse Temurin)
+FROM eclipse-temurin:17-jdk-jammy
 
 # 작업 디렉토리
 WORKDIR /app
