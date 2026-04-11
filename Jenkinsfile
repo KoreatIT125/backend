@@ -1,26 +1,25 @@
 pipeline {
     agent any
     
-    tools {
-        jdk 'JDK17'
-    }
-    
     stages {
         stage('Checkout') {
             steps {
+                echo '📦 Git Repository 체크아웃 중...'
                 checkout scm
             }
         }
         
         stage('Build') {
             steps {
-                sh './gradlew clean build -x test'
+                echo '🔨 Gradle 빌드 시작...'
+                bat 'gradlew.bat clean build -x test'
             }
         }
         
         stage('Test') {
             steps {
-                sh './gradlew test'
+                echo '🧪 단위 테스트 실행 중...'
+                bat 'gradlew.bat test'
             }
             post {
                 always {
@@ -31,9 +30,11 @@ pipeline {
         
         stage('Docker Build') {
             steps {
-                script {
-                    docker.build("disaster-safety-backend:${env.BUILD_NUMBER}")
-                }
+                echo '🐳 Docker 이미지 빌드 중...'
+                bat '''
+                    docker build -t petmediscan-backend:%BUILD_NUMBER% .
+                    docker tag petmediscan-backend:%BUILD_NUMBER% petmediscan-backend:latest
+                '''
             }
         }
         
@@ -42,18 +43,27 @@ pipeline {
                 branch 'main'
             }
             steps {
-                echo 'Deploying to production...'
-                // TODO: 배포 스크립트 추가
+                echo '🚀 Docker 컨테이너 재배포 중...'
+                bat '''
+                    docker stop petmediscan-backend 2>nul || echo Container not running
+                    docker rm petmediscan-backend 2>nul || echo Container not found
+                    
+                    docker run -d --name petmediscan-backend --network pet-infra_petmediscan-network -p 8080:8080 -e SPRING_DATASOURCE_URL=jdbc:mysql://petmediscan-db:3306/KIT125 -e SPRING_DATASOURCE_USERNAME=pet_user -e SPRING_DATASOURCE_PASSWORD=pet_pass123 -e AI_EYE_SERVICE_URL=http://petmediscan-ai-eye:5000 -e AI_SKIN_SERVICE_URL=http://petmediscan-ai-skin:5001 petmediscan-backend:latest
+                '''
             }
         }
     }
     
     post {
         success {
-            echo 'Backend CI/CD 성공!'
+            echo '✅ 빌드 및 배포 성공!'
         }
         failure {
-            echo 'Backend CI/CD 실패!'
+            echo '❌ 빌드 또는 배포 실패!'
+        }
+        always {
+            echo '🧹 워크스페이스 정리 중...'
+            cleanWs()
         }
     }
 }
