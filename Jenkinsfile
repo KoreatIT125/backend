@@ -12,14 +12,15 @@ pipeline {
         stage('Build') {
             steps {
                 echo '🔨 Gradle 빌드 시작...'
-                bat 'gradlew.bat clean build -x test'
+                sh 'chmod +x gradlew'
+                sh './gradlew clean build -x test'
             }
         }
         
         stage('Test') {
             steps {
                 echo '🧪 단위 테스트 실행 중...'
-                bat 'gradlew.bat test'
+                sh './gradlew test'
             }
             post {
                 always {
@@ -31,24 +32,33 @@ pipeline {
         stage('Docker Build') {
             steps {
                 echo '🐳 Docker 이미지 빌드 중...'
-                bat '''
-                    docker build -t petmediscan-backend:%BUILD_NUMBER% .
-                    docker tag petmediscan-backend:%BUILD_NUMBER% petmediscan-backend:latest
+                sh '''
+                    docker build -t petmediscan-backend:${BUILD_NUMBER} .
+                    docker tag petmediscan-backend:${BUILD_NUMBER} petmediscan-backend:latest
                 '''
             }
         }
         
         stage('Deploy') {
             when {
-                branch 'main'
+                branch 'master'
             }
             steps {
                 echo '🚀 Docker 컨테이너 재배포 중...'
-                bat '''
-                    docker stop petmediscan-backend 2>nul || echo Container not running
-                    docker rm petmediscan-backend 2>nul || echo Container not found
+                sh '''
+                    docker stop petmediscan-backend || true
+                    docker rm petmediscan-backend || true
                     
-                    docker run -d --name petmediscan-backend --network pet-infra_petmediscan-network -p 8080:8080 -e SPRING_DATASOURCE_URL=jdbc:mysql://petmediscan-db:3306/KIT125 -e SPRING_DATASOURCE_USERNAME=pet_user -e SPRING_DATASOURCE_PASSWORD=pet_pass123 -e AI_EYE_SERVICE_URL=http://petmediscan-ai-eye:5000 -e AI_SKIN_SERVICE_URL=http://petmediscan-ai-skin:5001 petmediscan-backend:latest
+                    docker run -d \
+                        --name petmediscan-backend \
+                        --network pet-infra_petmediscan-network \
+                        -p 8080:8080 \
+                        -e SPRING_DATASOURCE_URL=jdbc:mysql://petmediscan-db:3306/KIT125 \
+                        -e SPRING_DATASOURCE_USERNAME=pet_user \
+                        -e SPRING_DATASOURCE_PASSWORD=pet_pass123 \
+                        -e AI_EYE_SERVICE_URL=http://petmediscan-ai-eye:5000 \
+                        -e AI_SKIN_SERVICE_URL=http://petmediscan-ai-skin:5001 \
+                        petmediscan-backend:latest
                 '''
             }
         }
