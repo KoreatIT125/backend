@@ -1,50 +1,98 @@
 package com.disaster.safety.util;
 
-import java.nio.charset.StandardCharsets;
+import java.security.Key;
+import java.time.ZonedDateTime;
 import java.util.Date;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import io.jsonwebtoken.Jwts;
-import org.springframework.beans.factory.annotation.Value;
+import com.disaster.safety.dto.CustomUserInfoDto;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.extern.slf4j.Slf4j;
+
+// JWT 생성 및 검증
+@Slf4j
 @Component
 public class JwtUtil {
-    
-    private SecretKey secretKey;
+    // JWT 서명키
+    private final Key key;
+    private final long accessTokenExpTime;
 
-    public JwtUtil(@Value("${JWT_SECRET}") String secret) {
-        this.secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
+    public JwtUtil(
+        @Value("${jwt.secret}") final String secretKey,
+        @Value("${jwt.expriation_time:3600}") final long accessTokenExpTime) 
+    {
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        this.key = Keys.hmacShaKeyFor(keyBytes);
+        this.accessTokenExpTime = accessTokenExpTime;
     }
 
-    // UserID 반환
-    public String getUserId(String token) {
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("userId", String.class);
+    // Access Token 생성
+    public String createAccessToken(CustomUserInfoDto member) {
+        return createToken(member, accessTokenExpTime);
     }
 
-    // role 반환
-    public String getUserRole(String token) {
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("userRole", String.class);
-    }
+    // JWT 생성
+    private String createToken(CustomUserInfoDto member, long expireTime) {
+        Claims claims = Jwts.claims();
+        claims.put("memberId", member.getMemberId());
+        claims.put("userId", member.getUserId());
+        claims.put("password", member.getPassword());
+        claims.put("userName", member.getUserName());
 
-    // 토큰 기간 만료 검증
-    public Boolean isExpired(String token) {
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
-    }
-
-    // 토큰 생성
-    public String createJwt(String userId, String userRole, Long expiredMs) {
+        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime tokenValidity = now.plusSeconds(expireTime);
 
         return Jwts.builder()
-                .claim("userId", userId)
-                .claim("userRole", userRole)
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + expiredMs))
-                .signWith(secretKey)
+                .setClaims(claims)
+                .setIssuedAt(Date.from(now.toInstant()))
+                .setExpiration(Date.from(tokenValidity.toInstant()))
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
+    // Token에서 UserID 추출
+    public String getUserId(String token) {
+        return parseClaims(token).get("userId", String.class);
+    }
+
+    // JWT 검증
+    public boolean isValidToken(String token) {
+        try {
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            return true;
+        } catch (SecurityException | MalformedJwtException e) {
+            log.info("Invalid JWT", e);
+        } catch (ExpiredJwtException e) {
+            log.info("Expired JWT", e);
+        } catch (UnsupportedJwtException e) {
+            log.info("Unsupported JWT", e);
+        } catch (IllegalArgumentException e) {
+            log.info("JWT claims string is empty", e);
+        }
+        return false;
+    }
+
+    // JWT Claims 추출
+    public Claims parseClaims(String accessToken) {
+        try {
+            return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(accessToken)
+                .getBody();
+
+        } catch (ExpiredJwtException e) {
+            return e.getClaims();
+        }
+    }
 }
