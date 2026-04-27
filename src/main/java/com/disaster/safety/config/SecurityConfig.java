@@ -33,8 +33,8 @@ public class SecurityConfig {
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
 
     private static final String[] AUTH_WHITELIST = {
-            "/member/login",
-            "/member/signup",
+            "/api/member/login",
+            "/api/member/signup",
             "/swagger-ui/**",
             "/api-docs",
             "swagger-ui-custom.html"
