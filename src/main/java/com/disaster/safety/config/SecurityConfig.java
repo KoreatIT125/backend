@@ -36,8 +36,13 @@ public class SecurityConfig {
             "/api/member/login",
             "/api/member/signup",
             "/swagger-ui/**",
-            "/api-docs",
-            "swagger-ui-custom.html"
+            //"/api-docs",
+            //"/swagger-ui-custom.html"
+            "/v3/api-docs/**",
+            "/swagger-ui.html",
+            "/swagger-resources/**"
+            // 스웨거 로컬 접속주소
+            // http://localhost:8097/swagger-ui/index.html
     };
 
     @Bean
