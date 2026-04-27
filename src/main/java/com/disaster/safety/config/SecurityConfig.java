@@ -13,11 +13,11 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.disaster.safety.filter.JwtAuthFilter;
-import com.disaster.safety.handler.CustomAccessDeniedHandler;
-import com.disaster.safety.handler.CustomAuthenticationEntryPoint;
-import com.disaster.safety.service.CustomUserDetailsService;
-import com.disaster.safety.util.JwtUtil;
+import com.disaster.safety.member.service.CustomUserDetailsService;
+import com.disaster.safety.security.filter.JwtAuthFilter;
+import com.disaster.safety.security.handler.CustomAccessDeniedHandler;
+import com.disaster.safety.security.handler.CustomAuthenticationEntryPoint;
+import com.disaster.safety.security.util.JwtUtil;
 
 import lombok.AllArgsConstructor;
 
