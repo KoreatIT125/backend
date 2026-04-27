@@ -1,5 +1,6 @@
 package com.disaster.safety.util;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.time.ZonedDateTime;
 import java.util.Date;
@@ -14,7 +15,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
-import io.jsonwebtoken.io.Decoders;
+//import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
@@ -29,11 +30,21 @@ public class JwtUtil {
 
     public JwtUtil(
         @Value("${jwt.secret}") final String secretKey,
-        @Value("${jwt.expriation_time:3600}") final long accessTokenExpTime) 
+        @Value("${jwt.expiration_time:3600}") final long accessTokenExpTime) 
     {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        // jwt.secret 값을 Base64로 디코딩하여 서명키 생성
+        //byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+
+        // jwt.secret 값을 UTF-8로 인코딩하여 서명키 생성
+        byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
+        // 디버깅을 위해 JWT SECRET과 길이 출력
+        System.out.println("JWT SECRET = " + secretKey);
+        System.out.println("JWT SECRET LENGTH = " + secretKey.length());
+        
         this.key = Keys.hmacShaKeyFor(keyBytes);
         this.accessTokenExpTime = accessTokenExpTime;
+
+        
     }
 
     // Access Token 생성

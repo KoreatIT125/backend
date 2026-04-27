@@ -2,7 +2,7 @@ package com.disaster.safety.service;
 
 import java.util.Optional;
 
-import org.modelmapper.ModelMapper;
+// import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,7 +26,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder encoder;
-    private final ModelMapper modelMapper;
+    // private final ModelMapper modelMapper;
 
     @Transactional
     public String login(LoginRequestDto dto) {
