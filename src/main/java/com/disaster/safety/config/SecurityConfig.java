@@ -9,15 +9,18 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
+//import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.disaster.safety.member.service.CustomOauth2UserService;
 import com.disaster.safety.member.service.CustomUserDetailsService;
 import com.disaster.safety.security.filter.JwtAuthFilter;
 import com.disaster.safety.security.handler.CustomAccessDeniedHandler;
 import com.disaster.safety.security.handler.CustomAuthenticationEntryPoint;
+import com.disaster.safety.security.handler.OAuth2LoginFailureHandler;
 import com.disaster.safety.security.util.JwtUtil;
+
 
 import lombok.AllArgsConstructor;
 
@@ -31,6 +34,9 @@ public class SecurityConfig {
     private final JwtUtil jwtUtil;
     private final CustomAccessDeniedHandler accessDeniedHandler;
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+    private final CustomOauth2UserService customOauth2UserService;
+    private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
+
 
     private static final String[] AUTH_WHITELIST = {
             "/api/member/login",
@@ -40,9 +46,19 @@ public class SecurityConfig {
             //"/swagger-ui-custom.html"
             "/v3/api-docs/**",
             "/swagger-ui.html",
-            "/swagger-resources/**"
-            // 스웨거 로컬 접속주소
+            "/swagger-resources/**",
+            // 스웨거 로컬 접속주소 ##테스트 할때 포트 설정 확인##
             // http://localhost:8097/swagger-ui/index.html
+
+            "/oauth2/authorization/**",
+            "/login/oauth2/code/**",
+            "/api/member/login/oauth2/**"
+            // 소셜 로그인 테스트 주소
+            // http://localhost:8097/oauth2/authorization/google\
+            // 승인되고 나서 테스트 할 주소
+            // http://localhost:8097/login/oauth2/code/google
+        
+            
     };
 
     @Bean
@@ -55,11 +71,21 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable);
         http.cors(Customizer.withDefaults());
 
-        http.sessionManagement(sessionManagement ->
-                sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        //http.sessionManagement(sessionManagement ->
+                //sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http.formLogin(AbstractHttpConfigurer::disable);
         http.httpBasic(AbstractHttpConfigurer::disable);
+
+        // OAuth2 로그인 방식 설정
+        http.oauth2Login(authorizeRequests -> authorizeRequests
+                .userInfoEndpoint(userInfo -> userInfo.userService(customOauth2UserService))
+                .defaultSuccessUrl("/api/member/login/oauth2/success", true)
+                .failureHandler(oAuth2LoginFailureHandler));
+
+        // 로그아웃
+        http.logout((authorizeRequests) -> authorizeRequests.logoutUrl("/api/member/logout"));
+                
 
         http.addFilterBefore(new JwtAuthFilter(customUserDetailsService, jwtUtil),
                 UsernamePasswordAuthenticationFilter.class);
