@@ -46,6 +46,12 @@ public class Member {
 	@Column(name = "ROLE", nullable = false)
 	private RoleType role;
 
+	// provider는 소셜 로그인 제공자(구글)
+	private String provider;
+	// providerId는 소셜 로그인 제공자에서 제공하는 고유 ID
+	private String providerId;
+
+
 	public void updatePassword(String password) {
 		this.password = password;
 	}

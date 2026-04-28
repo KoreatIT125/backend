@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class CustomUserDetails implements UserDetails {
+public class CustomSecurityUserDetails implements UserDetails {
 
 	private final CustomUserInfoDto member;
 

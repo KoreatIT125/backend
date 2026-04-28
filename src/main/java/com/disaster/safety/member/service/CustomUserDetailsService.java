@@ -5,7 +5,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.disaster.safety.member.details.CustomUserDetails;
+import com.disaster.safety.member.details.CustomSecurityUserDetails;
 import com.disaster.safety.member.dto.CustomUserInfoDto;
 import com.disaster.safety.member.entity.Member;
 import com.disaster.safety.member.repository.MemberRepository;
@@ -34,6 +34,6 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .role(member.getRole())
                 .build();
 
-        return new CustomUserDetails(dto);
+        return new CustomSecurityUserDetails(dto);
     }
 }
