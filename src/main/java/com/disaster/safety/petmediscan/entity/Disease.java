@@ -7,26 +7,37 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
 @Entity
+@Table(name = "disease")
+@Getter 
+@Setter
 public class Disease {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
-    private String name;
+    @Column(nullable = false, unique = true)
+    private String name; // AI label
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Types type;
+    private String koreanName;
 
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String treatment;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, name = "risk_level")
+    private RiskTypes riskLevel; // 상 / 중 / 하
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, name = "category" )
+    private Types category; // 피부 / 안구
 }

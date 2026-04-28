@@ -20,8 +20,8 @@ spring:
     # url: jdbc:mysql://host.docker.internal:3308/KIT125?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     # 로컬 개발 (gradlew bootRun): 192.168.2.15:3308 사용
     #url: jdbc:mysql://192.168.2.15:3308/KIT125?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&useHostsInPrivileges=false
-    # username: pet_user
-    # password: pet_pass123
+    # username: admin
+    # password: 1234
     # driver-class-name: com.mysql.cj.jdbc.Driver
 
     # H2-DataBase
