@@ -42,4 +42,8 @@ public class DiagnosisLogService {
     public List<DiagnosisLog> getLogsByPet(Pet pet) {
         return diagnosisLogRepository.findByPetOrderByCreatedAtDesc(pet);
     }
+
+    public List<DiagnosisLog> getLogsByMember(Member member) {
+        return diagnosisLogRepository.findByMemberOrderByCreatedAtDesc(member);
+    }
 }

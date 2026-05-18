@@ -96,13 +96,20 @@ public class DiagnosisController {
         }
     }
 
-    @GetMapping("/history/{petId}")
+    @GetMapping("/events/{petId}")
     public ResponseEntity<List<DiagnosisLog>> history(@PathVariable Long petId,
             @AuthenticationPrincipal UserDetails userDetails) {
         // 2026-05-04: 진단 이력 조회 전 pet 접근 권한 검증
         Member member = memberService.getByUserId(userDetails.getUsername());
         Pet pet = petService.getAuthorizedPet(petId, member);
         return ResponseEntity.ok(diagnosisLogService.getLogsByPet(pet));
+    }
+
+    @GetMapping("/events")
+    public ResponseEntity<List<DiagnosisLog>> historyByUser(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        Member member = memberService.getByUserId(userDetails.getUsername());
+        return ResponseEntity.ok(diagnosisLogService.getLogsByMember(member));
     }
 
     @GetMapping("/images/{fileName:.+}")
