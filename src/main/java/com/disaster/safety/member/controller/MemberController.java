@@ -1,7 +1,7 @@
 package com.disaster.safety.member.controller;
 
-import java.util.HashMap;
-import java.util.Map;
+//import java.util.HashMap;
+//import java.util.Map;
 
 import javax.validation.Valid;
 
@@ -52,7 +52,7 @@ public class MemberController {
     }
 
     @GetMapping("/login/oauth2/success")
-    public ResponseEntity<Map<String, Object>> oauth2Success(Authentication authentication) {
+    public ResponseEntity<Void> oauth2Success(Authentication authentication) {
         CustomOauth2UserDetails oAuth2UserDetails = (CustomOauth2UserDetails) authentication.getPrincipal();
         Member member = oAuth2UserDetails.getMember();
 
@@ -65,12 +65,12 @@ public class MemberController {
                 .build();
 
         String accessToken = jwtUtil.createAccessToken(info);
-        Map<String, Object> response = new HashMap<>();
-        response.put("accessToken", accessToken);
-        response.put("memberId", member.getId());
-        response.put("userName", member.getUserName());
-
-        return ResponseEntity.ok(response);
+        // OAuth2 로그인 성공 시 클라이언트로 토큰과 사용자 정보 전달
+        String redirectUrl = "http://localhost:5173/oauth/callback?accessToken=" + accessToken;
+        // 프론트 콜백 페이지로 리다이렉트
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .header("Location", redirectUrl)
+                .build();
     }
 
     @GetMapping("/login/oauth2/failure")
