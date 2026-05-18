@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -82,5 +83,16 @@ public class PetController {
 
         var pet = petService.modify(petId, petCreateForm.getBreed(), petCreateForm.getBirth_date());
         return ResponseEntity.ok(PetResponseDto.from(pet));
+    }
+
+    @DeleteMapping("/{petId}")
+    public ResponseEntity<Void> deletePet(@PathVariable("petId") Long petId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        // 2026-05-04: pet 삭제 전 접근 권한 먼저 검증
+        Member loginMember = memberService.getByUserId(userDetails.getUsername());
+        petService.getAuthorizedPet(petId, loginMember);
+
+        petService.delete(petId);
+        return ResponseEntity.noContent().build();
     }
 }

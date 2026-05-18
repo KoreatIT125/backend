@@ -78,6 +78,11 @@ public class PetService {
         return petRepository.save(pet);
     }
 
+    public void delete(long id) {
+        Pet pet = get(id);
+        petRepository.delete(pet);
+    }
+
     private void validatePetAccess(Pet pet, Member loginMember) {
         if (isAdmin(loginMember)) {
             return;
